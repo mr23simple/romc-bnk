@@ -347,6 +347,10 @@ app.get('/class_distribution', (req, res) => {
     res.json(result);
 });
 
+app.get('/test', (req, res) => {
+  res.send('Test endpoint is working!');
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
