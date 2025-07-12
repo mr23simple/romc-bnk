@@ -1,0 +1,26 @@
+{
+  "name": "bnk",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mr23simple/romc-bnk.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mr23simple/romc-bnk/issues"
+  },
+  "homepage": "https://github.com/mr23simple/romc-bnk#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "xlsx": "^0.18.5"
+  }
+}

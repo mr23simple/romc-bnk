@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNK Guild Tool - BNK</title>
+    <!-- Sortable.js for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font */
+            background-color: #F5F5DC; /* Dirty White */
+            color: #333333; /* Dark Grey */
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        nav {
+            background-color: #CCCCFF; /* Lavender */
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+        }
+        nav a {
+            color: #333333;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: bold;
+        }
+        nav a:hover {
+            background-color: #ADD8E6; /* Light Blue */
+            transform: translateY(-2px);
+        }
+        nav a.active {
+            background-color: #87CEEB; /* Sky Blue */
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 25px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #555555;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #CCCCCC; /* Light Grey */
+            border-radius: 10px;
+            background-color: #FDFDFD;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        input[type="text"], select, input[type="file"] {
+            padding: 10px 12px;
+            margin-right: 10px;
+            border: 1px solid #ADD8E6; /* Light Blue */
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            width: calc(100% - 24px); /* Adjust for padding */
+            box-sizing: border-box; /* Include padding in width */
+            margin-bottom: 10px; /* Space out inputs */
+        }
+        input[type="text"]:focus, select:focus, input[type="file"]:focus {
+            border-color: #87CEEB;
+            box-shadow: 0 0 5px rgba(135, 206, 235, 0.5);
+            outline: none;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 5px;
+            margin-right: 10px;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn-primary {
+            background-color: #90EE90; /* Light Green */
+        }
+        .btn-primary:hover {
+            background-color: #7AC57A;
+        }
+        .btn-secondary {
+            background-color: #ADD8E6; /* Light Blue */
+        }
+        .btn-secondary:hover {
+            background-color: #87CEEB;
+        }
+        .btn-danger {
+            background-color: #FF6347; /* Tomato */
+        }
+        .btn-danger:hover {
+            background-color: #E5533A;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate; /* Use separate to allow border-radius on cells */
+            border-spacing: 0;
+            margin-top: 15px;
+            border-radius: 8px; /* Rounded corners for the entire table */
+            overflow: hidden; /* Ensures internal borders are clipped */
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #E0E0E0; /* Lighter border */
+            text-align: left;
+        }
+        th {
+            background-color: #E0FFFF; /* Light Cyan */
+            color: #555555;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        tr:last-child td {
+            border-bottom: none; /* No border on the last row */
+        }
+        tbody tr:nth-child(even) {
+            background-color: #F9F9F9;
+        }
+        tbody tr:hover {
+            background-color: #E6F7FF; /* Very light blue on hover */
+        }
+
+        /* Grouping specific styles */
+        .group-builder-layout {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: 20px;
+        }
+        .player-pool-section {
+            flex: 1;
+            min-width: 280px; /* Minimum width for player pool */
+        }
+        .group-containers-section {
+            flex: 2;
+            min-width: 320px; /* Minimum width for group containers */
+        }
+
+        .player-list, .group-member-list {
+            min-height: 150px;
+            border: 2px dashed #ADD8E6; /* Light Blue dashed border */
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            background-color: #F8FCFF; /* Very light blue */
+            list-style: none; /* Remove default list bullets */
+            padding-left: 10px; /* Adjust padding */
+        }
+        .player-item {
+            background-color: #E0FFFF; /* Light Cyan */
+            border: 1px solid #87CEEB; /* Sky Blue border */
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .player-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .player-item.sortable-ghost { /* Sortable.js ghost class */
+            opacity: 0.2;
+            background-color: #cceeff;
+            border: 1px dashed #87CEEB;
+        }
+        .player-item .class-tag {
+            background-color: #CCCCFF;
+            color: #333333;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .group-container {
+            background-color: #FFFFFF;
+            border: 1px solid #ADD8E6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .group-container h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555555;
+            font-size: 1.2em;
+        }
+        .group-container input[type="text"] {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .group-container select {
+             width: calc(100% - 20px);
+             margin-bottom: 10px;
+        }
+        .group-member-list li {
+            background-color: #F0F8FF; /* Alice Blue */
+            border: 1px solid #B0E0E6; /* Powder Blue */
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .group-member-list li .remove-member-btn {
+            background-color: #FF6347;
+            padding: 4px 8px;
+            font-size: 0.8em;
+            border-radius: 4px;
+            box-shadow: none;
+            margin-right: 0;
+        }
+        .group-member-list li .remove-member-btn:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: #E5533A;
+        }
+        .delete-group-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF6347;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        /* Class Distribution */
+        .class-bar-chart {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #F8FCFF;
+            border: 1px solid #ADD8E6;
+            border-radius: 10px;
+        }
+        .class-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .class-bar-label {
+            width: 150px;
+            font-weight: bold;
+            color: #555555;
+        }
+        .class-bar-fill {
+            height: 25px;
+            background-color: #87CEEB; /* Sky Blue */
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .class-bar-fill.warlock { background-color: #90EE90; } /* Light Green */
+        .class-bar-fill.archbishop { background-color: #CCCCFF; } /* Lavender */
+        /* Add more class-specific colors if desired */
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        .modal-content p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        .modal-buttons button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#roster" id="navRoster" class="active">Roster Management</a>
+        <a href="#groups" id="navGroups">Group Builder</a>
+        <a href="#class-overview" id="navClassOverview">Class Overview</a>
+    </nav>
+
+    <div class="container" id="roster">
+        <h1>BNK Guild Roster</h1>
+
+        <div class="section">
+            <h2>Import Players</h2>
+            <p>Upload an Excel file (.xlsx, .xls) to import your guild roster. The file should contain columns for 'Player Name' and 'Class'.</p>
+            <input type="file" id="excelUpload" accept=".xlsx, .xls">
+            <button class="btn-secondary" id="uploadExcelBtn">Upload Excel</button>
+            <div id="excelUploadStatus" style="margin-top: 10px; font-size: 0.9em; color: green;"></div>
+            <div id="excelUploadErrors" style="margin-top: 10px; font-size: 0.9em; color: red;"></div>
+        </div>
+
+        <div class="section">
+            <h2>Add Player Manually</h2>
+            <input type="text" id="playerName" placeholder="Player Name">
+            <select id="playerClass">
+                <option value="">Select Class</option>
+                <option value="Sorcerer">Sorcerer</option>
+                <option value="Warlock">Warlock</option>
+                <option value="Archbishop">Archbishop</option>
+                <option value="Shura">Shura</option>
+                <option value="Hunter">Hunter</option>
+                <option value="Minstrel">Minstrel</option>
+                <option value="Wanderer">Wanderer</option>
+                <option value="Rune Knight">Rune Knight</option>
+                <option value="Royal Guard">Royal Guard</option>
+                <option value="Shadow Chaser">Shadow Chaser</option>
+                <option value="Guillotine Cross">Guillotine Cross</option>
+                <option value="Mechanic">Mechanic</option>
+                <option value="Genetic">Genetic</option>
+            </select>
+            <button class="btn-primary" id="addPlayerBtn">Add Player</button>
+        </div>
+
+        <div class="section">
+            <h2>Current Guild Roster</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player Name</th>
+                        <th>Class</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="playerTableBody">
+                    <!-- Player rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="container" id="groups" style="display: none;">
+        <h1>BNK Guild Group Builder</h1>
+        <div class="section group-builder-layout">
+            <div class="player-pool-section">
+                <h2>Available Players</h2>
+                <div class="player-list" id="availablePlayers">
+                    <!-- Draggable player items will be loaded here -->
+                </div>
+            </div>
+            <div class="group-containers-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Guild Groups</h2>
+                    <button class="btn-primary" id="addNewGroupBtn">Add New Group</button>
+                </div>
+                <div id="groupContainers">
+                    <!-- Group containers will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="class-overview" style="display: none;">
+        <h1>BNK Guild Class Overview</h1>
+        <div class="section">
+            <h2>Player Class Distribution</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Class Name</th>
+                        <th>Number of Players</th>
+                    </tr>
+                </thead>
+                <tbody id="classDistributionTableBody">
+                    <!-- Class distribution will be dynamically added here -->
+                </tbody>
+            </table>
+            <div class="class-bar-chart" id="classBarChart">
+                <h3>Visual Overview</h3>
+                <!-- Bar chart will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Confirmations/Alerts -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button class="btn-primary" id="modalConfirmBtn" style="display: none;">Confirm</button>
+                <button class="btn-secondary" id="modalCancelBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        const ALLOWED_CLASSES = [
+            "Sorcerer", "Warlock", "Archbishop", "Shura", "Hunter", "Minstrel",
+            "Wanderer", "Rune Knight", "Royal Guard", "Shadow Chaser",
+            "Guillotine Cross", "Mechanic", "Genetic"
+        ];
+
+        // --- Modal Functions ---
+        const customModal = document.getElementById('customModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+
+        function showModal(title, message, isConfirm = false, onConfirm = () => {}, onCancel = () => {}) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalConfirmBtn.style.display = isConfirm ? 'inline-block' : 'none';
+            modalConfirmBtn.onclick = () => {
+                onConfirm();
+                customModal.style.display = 'none';
+            };
+            modalCancelBtn.onclick = () => {
+                onCancel();
+                customModal.style.display = 'none';
+            };
+            customModal.style.display = 'flex';
+        }
+
+        // --- Navigation ---
+        const navLinks = document.querySelectorAll('nav a');
+        const sections = document.querySelectorAll('.container');
+
+        function showSection(id) {
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(id).style.display = 'block';
+
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === `#${id}`) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+
+            // Refresh data when navigating
+            if (id === 'roster') {
+                fetchPlayers();
+            } else if (id === 'groups') {
+                fetchPlayersAndGroups();
+            } else if (id === 'class-overview') {
+                fetchClassDistribution();
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                showSection(targetId);
+            });
+        });
+
+        // Initial load
+        showSection('roster');
+
+        // --- Player Management (Roster) ---
+        const playerNameInput = document.getElementById('playerName');
+        const playerClassSelect = document.getElementById('playerClass');
+        const addPlayerBtn = document.getElementById('addPlayerBtn');
+        const playerTableBody = document.getElementById('playerTableBody');
+        const excelUploadInput = document.getElementById('excelUpload');
+        const uploadExcelBtn = document.getElementById('uploadExcelBtn');
+        const excelUploadStatus = document.getElementById('excelUploadStatus');
+        const excelUploadErrors = document.getElementById('excelUploadErrors');
+
+        async function fetchPlayers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/players`);
+                const players = await response.json();
+                renderPlayers(players);
+            } catch (error) {
+                console.error('Error fetching players:', error);
+                showModal('Error', 'Failed to load players. Please check the backend server.');
+            }
+        }
+
+        function renderPlayers(players) {
+            playerTableBody.innerHTML = '';
+            if (players.length === 0) {
+                playerTableBody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No players added yet.</td></tr>';
+                return;
+            }
+            players.forEach(player => {
+                const row = playerTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>${player.class}</td>
+                    <td>
+                        <button class="btn-secondary" data-id="${player.id}" data-name="${player.name}" data-class="${player.class}" onclick="editPlayer(this)">Edit</button>
+                        <button class="btn-danger" data-id="${player.id}" onclick="deletePlayer(this)">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        addPlayerBtn.addEventListener('click', async () => {
+            const name = playerNameInput.value.trim();
+            const playerClass = playerClassSelect.value;
+
+            if (!name || !playerClass) {
+                showModal('Input Error', 'Please enter both player name and select a class.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/players`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, class: playerClass })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showModal('Success', result.message);
+                    playerNameInput.value = '';
+                    playerClassSelect.value = '';
+                    fetchPlayers(); // Refresh the list
+                } else {
+                    showModal('Error', result.error || 'Failed to add player.');
+                }
+            } catch (error) {
+                console.error('Error adding player:', error);
+                showModal('Error', 'Failed to add player. Please check the backend server.');
+            }
+        });
+
+        async function editPlayer(button) {
+            const playerId = button.dataset.id;
+            const currentName = button.dataset.name;
+            const currentClass = button.dataset.class;
+
+            showModal('Edit Player', `Editing ${currentName}. New Name: <input type="text" id="editPlayerName" value="${currentName}" style="width: 100%; margin-bottom: 10px;"><br>New Class: <select id="editPlayerClass" style="width: 100%;">${ALLOWED_CLASSES.map(cls => `<option value="${cls}" ${cls === currentClass ? 'selected' : ''}>${cls}</option>`).join('')}</select>`, true, async () => {
+                const newName = document.getElementById('editPlayerName').value.trim();
+                const newClass = document.getElementById('editPlayerClass').value;
+
+                if (!newName || !newClass) {
+                    showModal('Input Error', 'Player name and class cannot be empty.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/players/${playerId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: newName, class: newClass })
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showModal('Success', result.message);
+                        fetchPlayers(); // Refresh the list
+                    } else {
+                        showModal('Error', result.error || 'Failed to update player.');
+                    }
+                } catch (error) {
+                    console.error('Error updating player:', error);
+                    showModal('Error', 'Failed to update player. Please check the backend server.');
+                }
+            });
+        }
+
+        async function deletePlayer(button) {
+            const playerId = button.dataset.id;
+            showModal('Confirm Deletion', 'Are you sure you want to delete this player? This action cannot be undone.', true, async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/players/${playerId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showModal('Success', result.message);
+                        fetchPlayers(); // Refresh the list
+                    } else {
+                        showModal('Error', result.error || 'Failed to delete player.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting player:', error);
+                    showModal('Error', 'Failed to delete player. Please check the backend server.');
+                }
+            });
+        }
+
+        uploadExcelBtn.addEventListener('click', async () => {
+            const file = excelUploadInput.files[0];
+            if (!file) {
+                showModal('No File Selected', 'Please select an Excel file to upload.');
+                return;
+            }
+
+            excelUploadStatus.textContent = 'Uploading and processing...';
+            excelUploadErrors.textContent = '';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/players/upload_excel`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    excelUploadStatus.textContent = result.message;
+                    if (result.errors && result.errors.length > 0) {
+                        excelUploadErrors.textContent = 'Errors: ' + result.errors.join(', ');
+                        excelUploadErrors.style.color = 'red';
+                    } else {
+                        excelUploadErrors.textContent = '';
+                    }
+                    fetchPlayers(); // Refresh the list
+                } else {
+                    excelUploadStatus.textContent = '';
+                    excelUploadErrors.textContent = result.error || 'Failed to upload Excel.';
+                    excelUploadErrors.style.color = 'red';
+                }
+            } catch (error) {
+                console.error('Error uploading Excel:', error);
+                excelUploadStatus.textContent = '';
+                excelUploadErrors.textContent = 'Failed to upload Excel. Please check the backend server.';
+                excelUploadErrors.style.color = 'red';
+            }
+        });
+
+        // --- Group Management ---
+        const availablePlayersList = document.getElementById('availablePlayers');
+        const groupContainersDiv = document.getElementById('groupContainers');
+        const addNewGroupBtn = document.getElementById('addNewGroupBtn');
+
+        let allPlayers = []; // Store all players to filter for available ones
+        let allGroups = [];  // Store all groups
+
+        async function fetchPlayersAndGroups() {
+            try {
+                const [playersResponse, groupsResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/players`),
+                    fetch(`${API_BASE_URL}/groups`)
+                ]);
+                allPlayers = await playersResponse.json();
+                allGroups = await groupsResponse.json();
+                renderGroupBuilder();
+            } catch (error) {
+                console.error('Error fetching players or groups:', error);
+                showModal('Error', 'Failed to load players and groups for group builder. Please check the backend server.');
+            }
+        }
+
+        function renderGroupBuilder() {
+            // Determine which players are available (not in any group)
+            const groupedPlayerIds = new Set();
+            allGroups.forEach(group => {
+                group.members.forEach(member => groupedPlayerIds.add(member.id));
+            });
+            const availablePlayers = allPlayers.filter(player => !groupedPlayerIds.has(player.id));
+
+            // Render available players
+            availablePlayersList.innerHTML = '';
+            if (availablePlayers.length === 0) {
+                availablePlayersList.innerHTML = '<p style="text-align: center; color: #777;">No players available for grouping.</p>';
+            }
+            availablePlayers.forEach(player => {
+                const playerItem = document.createElement('div');
+                playerItem.classList.add('player-item');
+                playerItem.setAttribute('data-id', player.id);
+                playerItem.textContent = `${player.name}`;
+                const classTag = document.createElement('span');
+                classTag.classList.add('class-tag');
+                classTag.textContent = player.class;
+                playerItem.appendChild(classTag);
+                availablePlayersList.appendChild(playerItem);
+            });
+
+            // Render groups
+            groupContainersDiv.innerHTML = '';
+            if (allGroups.length === 0) {
+                groupContainersDiv.innerHTML = '<p style="text-align: center; color: #777;">No groups created yet. Click "Add New Group" to start.</p>';
+            }
+            allGroups.forEach(group => {
+                const groupDiv = createGroupContainer(group);
+                groupContainersDiv.appendChild(groupDiv);
+            });
+
+            // Initialize Sortable.js for drag and drop
+            initSortable();
+        }
+
+        function createGroupContainer(group = { id: null, name: 'New Group', leader: null, members: [] }) {
+            const groupDiv = document.createElement('div');
+            groupDiv.classList.add('group-container');
+            groupDiv.setAttribute('data-group-id', group.id);
+
+            const groupNameInput = document.createElement('input');
+            groupNameInput.type = 'text';
+            groupNameInput.value = group.name;
+            groupNameInput.placeholder = 'Group Name';
+            groupNameInput.addEventListener('change', async () => {
+                await updateGroup(group.id, { name: groupNameInput.value });
+                // Re-fetch to update all data and re-render if needed, or update locally
+                fetchPlayersAndGroups();
+            });
+
+            const leaderSelect = document.createElement('select');
+            leaderSelect.innerHTML = '<option value="">Assign Leader</option>';
+            group.members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.name;
+                if (group.leader && group.leader.id === member.id) {
+                    option.selected = true;
+                }
+                leaderSelect.appendChild(option);
+            });
+            leaderSelect.addEventListener('change', async () => {
+                const newLeaderId = leaderSelect.value ? parseInt(leaderSelect.value) : null;
+                await updateGroup(group.id, { leaderId: newLeaderId });
+                fetchPlayersAndGroups(); // Re-fetch to update leader display
+            });
+
+            const membersList = document.createElement('ul');
+            membersList.classList.add('group-member-list');
+            membersList.setAttribute('data-group-id', group.id); // For Sortable.js
+
+            group.members.forEach(member => {
+                const memberItem = document.createElement('li');
+                memberItem.setAttribute('data-id', member.id);
+                memberItem.textContent = `${member.name} (${member.class})`;
+                const removeBtn = document.createElement('button');
+                removeBtn.classList.add('remove-member-btn', 'btn-danger');
+                removeBtn.textContent = 'X';
+                removeBtn.onclick = () => removePlayerFromGroup(group.id, member.id);
+                memberItem.appendChild(removeBtn);
+                membersList.appendChild(memberItem);
+            });
+
+            const deleteGroupBtn = document.createElement('button');
+            deleteGroupBtn.classList.add('delete-group-btn', 'btn-danger');
+            deleteGroupBtn.textContent = 'Delete Group';
+            deleteGroupBtn.onclick = () => deleteGroup(group.id, group.members.length);
+
+            groupDiv.appendChild(groupNameInput);
+            groupDiv.appendChild(leaderSelect);
+            groupDiv.appendChild(membersList);
+            if (group.id !== null) { // Only show delete button for existing groups
+                groupDiv.appendChild(deleteGroupBtn);
+            }
+            return groupDiv;
+        }
+
+        addNewGroupBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: `New Group ${allGroups.length + 1}` })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showModal('Success', result.message);
+                    fetchPlayersAndGroups(); // Refresh the list
+                } else {
+                    showModal('Error', result.error || 'Failed to create group.');
+                }
+            } catch (error) {
+                console.error('Error creating group:', error);
+                showModal('Error', 'Failed to create group. Please check the backend server.');
+            }
+        });
+
+        async function updateGroup(groupId, data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    showModal('Error', result.error || 'Failed to update group.');
+                }
+            } catch (error) {
+                console.error('Error updating group:', error);
+                showModal('Error', 'Failed to update group. Please check the backend server.');
+            }
+        }
+
+        async function deleteGroup(groupId, memberCount) {
+            if (memberCount > 0) {
+                showModal('Cannot Delete Group', 'This group is not empty. Please remove all players before deleting the group.', false);
+                return;
+            }
+            showModal('Confirm Deletion', 'Are you sure you want to delete this empty group?', true, async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/groups/${groupId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showModal('Success', result.message);
+                        fetchPlayersAndGroups(); // Refresh the list
+                    } else {
+                        showModal('Error', result.error || 'Failed to delete group.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting group:', error);
+                    showModal('Error', 'Failed to delete group. Please check the backend server.');
+                }
+            });
+        }
+
+        async function addPlayerToGroup(groupId, playerId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/groups/${groupId}/add_player/${playerId}`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    showModal('Success', result.message);
+                    fetchPlayersAndGroups(); // Refresh UI
+                } else {
+                    showModal('Error', result.error || 'Failed to add player to group.');
+                }
+            } catch (error) {
+                console.error('Error adding player to group:', error);
+                showModal('Error', 'Failed to add player to group. Please check the backend server.');
+            }
+        }
+
+        async function removePlayerFromGroup(groupId, playerId) {
+            showModal('Confirm Removal', 'Are you sure you want to remove this player from the group?', true, async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/remove_player/${playerId}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showModal('Success', result.message);
+                        fetchPlayersAndGroups(); // Refresh UI
+                    } else {
+                        showModal('Error', result.error || 'Failed to remove player from group.');
+                    }
+                } catch (error) {
+                    console.error('Error removing player from group:', error);
+                    showModal('Error', 'Failed to remove player from group. Please check the backend server.');
+                }
+            });
+        }
+
+        function initSortable() {
+            // Make available players list sortable and draggable
+            new Sortable(availablePlayersList, {
+                group: {
+                    name: 'players',
+                    pull: 'clone', // Allow cloning to groups
+                    put: false // Don't allow dropping into available players from groups
+                },
+                animation: 150,
+                sort: true, // Allow sorting within the list
+                onEnd: function (evt) {
+                    // This event fires when dragging within the same list or when a clone is dropped elsewhere
+                    // If a player was moved from 'availablePlayersList' to a group, the original clone remains.
+                    // The actual removal from 'availablePlayersList' happens when a player is successfully added to a group via API.
+                    // So, no explicit removal needed here for cloning.
+                }
+            });
+
+            // Make each group's member list a drop target
+            document.querySelectorAll('.group-member-list').forEach(list => {
+                new Sortable(list, {
+                    group: {
+                        name: 'players',
+                        pull: true, // Allow pulling players out of groups
+                        put: true // Allow putting players into groups
+                    },
+                    animation: 150,
+                    onAdd: function (evt) {
+                        // Player added to a group
+                        const playerId = parseInt(evt.item.dataset.id);
+                        const targetGroupId = parseInt(evt.to.dataset.groupId);
+
+                        // Remove the original item from its source list if it was a move, not a clone
+                        if (evt.from.id === 'availablePlayers') {
+                            evt.item.parentNode.removeChild(evt.item); // Remove the cloned item from the source
+                        }
+
+                        addPlayerToGroup(targetGroupId, playerId);
+                    },
+                    onRemove: function (evt) {
+                        // Player removed from a group (dragged out)
+                        const playerId = parseInt(evt.item.dataset.id);
+                        const sourceGroupId = parseInt(evt.from.dataset.groupId);
+                        // The actual removal happens when it's dropped into availablePlayers or another group
+                        // If it's dropped back to availablePlayers, addPlayerToGroup will handle it.
+                        // If it's dropped into another group, the onAdd for that group will handle it.
+                        // If it's just dragged out and not dropped anywhere, it will be lost.
+                        // For simplicity, we will rely on onAdd to re-add to availablePlayers if dropped there.
+                        // For a more robust solution, you'd need to track if it was dropped successfully.
+                        // For now, we'll assume a successful drop to another list triggers the correct add/remove.
+                    },
+                    onMove: function (evt) {
+                        // Prevent moving into a group if it's already in that group (Sortable.js handles this mostly)
+                        // This is more for reordering within the same list.
+                    }
+                });
+            });
+        }
+
+
+        // --- Class Distribution ---
+        const classDistributionTableBody = document.getElementById('classDistributionTableBody');
+        const classBarChartDiv = document.getElementById('classBarChart');
+
+        async function fetchClassDistribution() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/class_distribution`);
+                const distribution = await response.json();
+                renderClassDistribution(distribution);
+            } catch (error) {
+                console.error('Error fetching class distribution:', error);
+                showModal('Error', 'Failed to load class distribution. Please check the backend server.');
+            }
+        }
+
+        function renderClassDistribution(distribution) {
+            classDistributionTableBody.innerHTML = '';
+            classBarChartDiv.innerHTML = '<h3>Visual Overview</h3>'; // Clear previous bars
+
+            if (distribution.length === 0) {
+                classDistributionTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center;">No players to show distribution.</td></tr>';
+                return;
+            }
+
+            let totalPlayers = distribution.reduce((sum, item) => sum + item.count, 0);
+            if (totalPlayers === 0) {
+                classDistributionTableBody.innerHTML = '<tr><td colspan="2" style="text-align: center;">No players to show distribution.</td></tr>';
+                return;
+            }
+
+            const classColors = {
+                "Sorcerer": "#87CEEB",
+                "Warlock": "#90EE90",
+                "Archbishop": "#CCCCFF",
+                "Shura": "#FFD700", /* Gold */
+                "Hunter": "#FFA07A", /* Light Salmon */
+                "Minstrel": "#DA70D6", /* Orchid */
+                "Wanderer": "#FF69B4", /* Hot Pink */
+                "Rune Knight": "#A9A9A9", /* Dark Gray */
+                "Royal Guard": "#4682B4", /* Steel Blue */
+                "Shadow Chaser": "#8B008B", /* Dark Magenta */
+                "Guillotine Cross": "#DC143C", /* Crimson */
+                "Mechanic": "#B0C4DE", /* Light Steel Blue */
+                "Genetic": "#20B2AA"  /* Light Sea Green */
+            };
+
+            distribution.sort((a, b) => b.count - a.count); // Sort by count descending
+
+            distribution.forEach(item => {
+                // Table Row
+                const row = classDistributionTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.class}</td>
+                    <td>${item.count}</td>
+                `;
+
+                // Bar Chart Element
+                const barContainer = document.createElement('div');
+                barContainer.classList.add('class-bar');
+                const label = document.createElement('span');
+                label.classList.add('class-bar-label');
+                label.textContent = item.class + ':';
+                const fill = document.createElement('div');
+                fill.classList.add('class-bar-fill');
+                fill.style.width = `${(item.count / totalPlayers) * 100}%`;
+                fill.style.backgroundColor = classColors[item.class] || '#CCCCCC'; // Default if no color
+                fill.textContent = item.count; // Display count inside bar
+
+                barContainer.appendChild(label);
+                barContainer.appendChild(fill);
+                classBarChartDiv.appendChild(barContainer);
+            });
+        }
+
+    </script>
+</body>
+</html>
